@@ -1,0 +1,138 @@
+WEEK 5 – INCREMENTAL LOAD EVIDENCE
+
+Project: Banking Data Engineering Pipeline
+Database: database/banking.db
+
+---
+
+1. INITIAL OPERATIONAL DATABASE STATE
+
+---
+
+Initial transaction count:
+10
+
+These transactions came from the validated Week 4 dataset.
+
+---
+
+2. DAILY FILE – 2026-09-07
+
+---
+
+File:
+data/daily/transactions_20260907.csv
+
+New transaction IDs:
+
+T4001
+T4002
+T4003
+T4004
+
+Transaction count after loading:
+14
+
+Result:
+10 existing transactions + 4 new transactions = 14 transactions
+
+---
+
+3. DAILY FILE – 2026-09-08
+
+---
+
+File:
+data/daily/transactions_20260908.csv
+
+New transaction IDs:
+
+T4005
+T4006
+T4007
+
+Correction:
+
+T1001
+Old amount: 500.0
+New amount: 550.0
+
+Transaction count after loading:
+17
+
+Rerun verification:
+
+The same 2026-09-08 file was loaded again.
+
+Transaction count remained:
+17
+
+The T1001 correction remained:
+550.0
+
+No duplicate transaction was created.
+
+---
+
+4. DAILY FILE – 2026-09-09
+
+---
+
+File:
+data/daily/transactions_20260909.csv
+
+New transaction IDs:
+
+T4008
+T4009
+T4010
+
+Correction:
+
+T4002
+Old amount: 50.0
+New amount: 55.0
+
+Final transaction count:
+20
+
+---
+
+5. FINAL OPERATIONAL RESULT
+
+---
+
+Final transactions:
+20
+
+Unique transaction IDs:
+20
+
+Known correction:
+
+T1001 = 550.0
+
+Known correction:
+
+T4002 = 55.0
+
+The incremental loading process inserted new transaction IDs and updated existing transaction IDs using UPSERT logic.
+
+---
+
+6. RERUN BEHAVIOR
+
+---
+
+Rerunning the 2026-09-08 daily file did not increase the transaction count.
+
+Before rerun:
+17
+
+After rerun:
+17
+
+The T1001 correction remained:
+550.0
+
+This demonstrates rerun-safe behavior and prevents duplicate transaction records.

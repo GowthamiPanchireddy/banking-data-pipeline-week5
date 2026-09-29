@@ -1,0 +1,67 @@
+WEEK 5 – PYTEST RESULTS EVIDENCE
+
+Project: Banking Data Engineering Pipeline
+
+Test command:
+
+python -m pytest -v
+
+---
+
+## TEST RESULT
+
+Total tests collected:
+17
+
+Passed:
+17
+
+Failed:
+0
+
+Result:
+
+17 passed in 0.75s
+
+---
+
+## TEST AREAS
+
+Database tests:
+
+* Expected tables
+* Foreign key enforcement
+* Expected row counts
+* Duplicate primary-key rejection
+* Invalid foreign-key rejection
+* Invalid amount rejection
+* Rerun does not create duplicates
+
+Pipeline tests:
+
+* Cross-file duplicate detection
+* Multiple validation errors
+* Original dataset regression
+
+Validation tests:
+
+* Valid amount
+* Negative amount
+* Non-numeric amount
+
+Week 5 analytics tests:
+
+* Fact transaction count
+* Unique transaction IDs
+* Known transaction correction
+* Known analytical result
+
+---
+
+## FINAL STATUS
+
+All 17 automated tests passed successfully.
+
+No test failures were reported.
+
+The Week 5 project passed the existing database, pipeline, validation, and new analytical test cases.

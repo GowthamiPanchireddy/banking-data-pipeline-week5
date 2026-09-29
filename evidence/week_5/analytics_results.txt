@@ -1,0 +1,162 @@
+WEEK 5 – ANALYTICAL RESULTS EVIDENCE
+
+Project: Banking Data Engineering Pipeline
+
+Analytical database:
+database/analytics.db
+
+---
+
+1. ANALYTICAL DATABASE TABLES
+
+---
+
+Dimension tables:
+
+dim_customer
+dim_account
+dim_branch
+dim_date
+
+Fact table:
+
+fact_transaction
+
+Final fact transaction count:
+20
+
+Unique transaction IDs:
+20
+
+Fact grain:
+
+One row in fact_transaction represents one banking transaction.
+
+---
+
+2. TRANSACTION ACTIVITY BY BRANCH
+
+---
+
+BR001:
+Transaction count: 5
+Total amount: 895.5
+
+BR002:
+Transaction count: 6
+Total amount: 1355.0
+
+BR003:
+Transaction count: 8
+Total amount: 2450.0
+
+One transaction, T4004, has a NULL branch reference because account A1005 is not present in the reference account data.
+
+---
+
+3. TRANSACTION ACTIVITY BY TYPE
+
+---
+
+CREDIT:
+Transaction count: 11
+Total amount: 4060.0
+
+DEBIT:
+Transaction count: 9
+Total amount: 675.5
+
+---
+
+4. CUSTOMER ACTIVITY
+
+---
+
+Maya Patel:
+3 transactions
+Total amount: 795.5
+
+Daniel Kim:
+2 transactions
+Total amount: 100.0
+
+Sofia Martinez:
+4 transactions
+Total amount: 1270.0
+
+Noah Williams:
+2 transactions
+Total amount: 85.0
+
+Ava Thompson:
+4 transactions
+Total amount: 1585.0
+
+Ethan Brown:
+4 transactions
+Total amount: 865.0
+
+---
+
+5. ACTIVITY BY DATE
+
+---
+
+2026-09-06:
+10 transactions
+Total amount: 3475.5
+
+2026-09-07:
+4 transactions
+Total amount: 485.0
+
+2026-09-08:
+3 transactions
+Total amount: 260.0
+
+2026-09-09:
+3 transactions
+Total amount: 515.0
+
+---
+
+6. HIGH-VALUE TRANSACTIONS
+
+---
+
+T3001:
+CREDIT
+1000.0
+
+T2001:
+CREDIT
+900.0
+
+T1001:
+CREDIT
+550.0
+
+---
+
+7. ANALYTICAL SUMMARY
+
+---
+
+The analytical database was successfully built from the operational banking database.
+
+The fact table contains 20 banking transactions.
+
+The analytical SQL queries successfully provide transaction activity by:
+
+* Branch
+* Transaction type
+* Customer
+* Account
+* Date
+* Branch and account type
+* Customer credit/debit activity
+* High-value transactions
+
+Note:
+
+CREDIT and DEBIT amounts are stored as positive transaction amounts. Therefore, SUM(amount) should not automatically be interpreted as net cash flow or account balance.
