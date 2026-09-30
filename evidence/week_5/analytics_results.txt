@@ -39,8 +39,8 @@ One row in fact_transaction represents one banking transaction.
 ---
 
 BR001:
-Transaction count: 5
-Total amount: 895.5
+Transaction count: 6
+Total amount: 930.5
 
 BR002:
 Transaction count: 6
@@ -50,7 +50,9 @@ BR003:
 Transaction count: 8
 Total amount: 2450.0
 
-One transaction, T4004, has a NULL branch reference because account A1005 is not present in the reference account data.
+All transactions have valid branch references in the analytical database.
+
+T4004 uses account A1002, which belongs to branch BR001.
 
 ---
 
@@ -72,29 +74,29 @@ Total amount: 675.5
 
 ---
 
-Maya Patel:
-3 transactions
-Total amount: 795.5
+Ava Thompson:
+4 transactions
+Total amount: 1585.0
 
 Daniel Kim:
 2 transactions
 Total amount: 100.0
 
-Sofia Martinez:
+Ethan Brown:
 4 transactions
-Total amount: 1270.0
+Total amount: 865.0
+
+Maya Patel:
+4 transactions
+Total amount: 830.5
 
 Noah Williams:
 2 transactions
 Total amount: 85.0
 
-Ava Thompson:
+Sofia Martinez:
 4 transactions
-Total amount: 1585.0
-
-Ethan Brown:
-4 transactions
-Total amount: 865.0
+Total amount: 1270.0
 
 ---
 
@@ -138,13 +140,38 @@ CREDIT
 
 ---
 
-7. ANALYTICAL SUMMARY
+7. INCREMENTAL CORRECTIONS VERIFIED
+
+---
+
+T4004:
+Account changed/loaded as A1002
+Branch: BR001
+Amount: 35.0
+
+T1001:
+Corrected amount: 550.0
+
+T4002:
+Corrected amount: 55.0
+
+Final fact transaction count:
+20
+
+Final unique transaction IDs:
+20
+
+---
+
+8. ANALYTICAL SUMMARY
 
 ---
 
 The analytical database was successfully built from the operational banking database.
 
 The fact table contains 20 banking transactions.
+
+The fact table maintains one row per banking transaction.
 
 The analytical SQL queries successfully provide transaction activity by:
 
@@ -156,6 +183,12 @@ The analytical SQL queries successfully provide transaction activity by:
 * Branch and account type
 * Customer credit/debit activity
 * High-value transactions
+
+The corrected September 7 daily file was processed successfully.
+
+Transaction T4004 now references account A1002, which belongs to branch BR001.
+
+The incremental loading process also preserved the corrected values for T1001 and T4002.
 
 Note:
 

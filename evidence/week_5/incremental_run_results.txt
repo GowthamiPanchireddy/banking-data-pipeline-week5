@@ -36,6 +36,15 @@ Transaction count after loading:
 Result:
 10 existing transactions + 4 new transactions = 14 transactions
 
+Correction verified:
+
+T4004:
+Account ID: A1002
+Branch: BR001
+Amount: 35.0
+
+The corrected September 7 daily file was used for processing.
+
 ---
 
 3. DAILY FILE – 2026-09-08
@@ -108,13 +117,16 @@ Final transactions:
 Unique transaction IDs:
 20
 
-Known correction:
+Verified corrections:
 
 T1001 = 550.0
 
-Known correction:
-
 T4002 = 55.0
+
+T4004:
+Account ID = A1002
+Branch = BR001
+Amount = 35.0
 
 The incremental loading process inserted new transaction IDs and updated existing transaction IDs using UPSERT logic.
 

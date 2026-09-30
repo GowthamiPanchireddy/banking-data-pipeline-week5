@@ -405,13 +405,25 @@ The amount is treated as the transaction amount. Since CREDIT and DEBIT are repr
 
 ## Data Quality Consideration
 
-One daily transaction, `T4004`, references account `A1005`, which is not present in the existing account reference data.
+The original September 7 daily transaction file contained an incorrect account reference for transaction `T4004`.
 
-The transaction is preserved in the fact table to maintain the required transaction grain.
+The corrected September 7 file provided for the assignment was used for the final processing.
 
-Its branch reference is therefore `NULL` rather than inventing a branch or account record.
+In the corrected file:
 
-This is documented as a data-quality/reference-data limitation.
+T4004 references account `A1002`.
+
+Account `A1002` exists in the account reference data and belongs to branch `BR001`.
+
+Therefore, T4004 is correctly represented in the analytical database with:
+
+Account ID: `A1002`
+
+Branch ID: `BR001`
+
+Amount: `35.0`
+
+The corrected file was processed successfully, and the final analytical database contains 20 unique transactions.
 
 ---
 
@@ -593,7 +605,6 @@ For this project:
 * The incremental loader does not maintain historical versions of corrected rows.
 * The current correction strategy assumes the incoming trusted row is the correct version.
 * The project does not implement a full audit-history table.
-* Reference-data issues such as missing account `A1005` are preserved and documented rather than automatically invented or repaired.
 
 ---
 
