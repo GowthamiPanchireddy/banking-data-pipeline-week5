@@ -624,3 +624,383 @@ The pipeline supports:
 * Analytical SQL
 * Automated testing
 * Data-quality documentation
+
+
+---
+
+# Week 6 — PySpark Banking Analytics Pipeline
+
+## Project Overview
+
+In Week 6, the existing banking data engineering project was extended using PySpark.
+
+The goal was to process banking data using Spark DataFrames and perform data quality checks, transformations, aggregations, joins, and analytical queries.
+
+The project includes a reproducible synthetic dataset containing 100,000 banking transactions.
+
+The existing Week 2–5 project work has been preserved.
+
+## Technology Used
+
+- Python 3.12.7
+- PySpark 4.2.0
+- Apache Spark 4.2.0
+- Java 17
+- pytest
+- VS Code
+- SQLite (existing Week 2–5 project)
+
+## Spark Data Loading
+
+The following banking datasets were loaded into Spark DataFrames:
+
+- Transactions
+- Accounts
+- Customers
+- Branches
+
+The DataFrames were inspected using `show()`, `printSchema()`, and `count()`.
+
+### Row Counts
+
+| Dataset | Row Count |
+|---|---:|
+| Accounts | 10 |
+| Customers | 6 |
+| Branches | 3 |
+| Synthetic Transactions | 100,000 |
+
+## Spark Transformations
+
+The following transformations were implemented using PySpark:
+
+- `select()` — selects the required columns.
+- `filter()` — filters CREDIT transactions.
+- `filter()` — identifies high-value transactions.
+- `withColumn()` — creates a derived column called `transaction_size`.
+
+The high-value transaction threshold is 3000.
+
+### Results
+
+- CREDIT transactions: 50,115
+- High-value transactions (amount > 3000): 40,036
+
+The `filter()` and `withColumn()` operations are transformations. Spark evaluates them when an action is triggered.
+
+## Spark Aggregations
+
+PySpark `groupBy()` and aggregation functions were used to analyze banking transactions.
+
+The following functions were used:
+
+- `count()` — counts transactions.
+- `sum()` — calculates total transaction amounts.
+- `avg()` — calculates average transaction amounts.
+- `groupBy()` — groups transactions by a selected column.
+
+### Analysis Performed
+
+- Summary by transaction type
+- Summary by account
+- Summary by branch
+
+### Results by Transaction Type
+
+| Transaction Type | Transaction Count |
+|---|---:|
+| CREDIT | 50,115 |
+| DEBIT | 49,885 |
+| Total | 100,000 |
+
+The CREDIT and DEBIT amounts are stored as positive values. Therefore, total transaction amount does not automatically represent net cash flow or account balance.
+
+
+## Spark Joins
+
+PySpark joins were used to combine banking transaction data with account and branch information.
+
+The project uses inner joins to connect:
+
+- Transactions with Accounts
+- Transaction summaries with Branches
+
+The joined data helps analyze transaction activity by account, customer, and branch.
+
+The transaction-to-account relationship was validated using a left anti join to identify transactions with invalid account IDs.
+
+Result:
+
+- Invalid account references: 0
+- Branch-level transaction counts total: 100,000
+
+## Spark Data Quality Checks
+
+PySpark was used to validate the quality and integrity of the banking data.
+
+The following checks were implemented:
+
+- Null transaction IDs
+- Null account IDs
+- Null transaction amounts
+- Duplicate transaction IDs
+- Transactions referencing nonexistent accounts
+- Accounts referencing nonexistent customers
+- Accounts referencing nonexistent branches
+
+### Data Quality Results
+
+| Check | Error Count |
+|---|---:|
+| Null transaction IDs | 0 |
+| Null account IDs | 0 |
+| Null amounts | 0 |
+| Duplicate transaction IDs | 0 |
+| Invalid account references | 0 |
+| Invalid customer references | 0 |
+| Invalid branch references | 0 |
+
+**Final Result: PASS**
+
+Total data quality errors: 0
+
+## Synthetic Banking Dataset
+
+A Python program was created to generate 100,000 synthetic banking transactions.
+
+Generator file:
+
+`src/spark/generate_transactions.py`
+
+Generated dataset:
+
+`data/generated/transactions_100k.csv`
+
+The generator uses a fixed random seed (`random.seed(42)`) to make the generated data reproducible.
+
+Each transaction contains:
+
+- Transaction ID
+- Account ID
+- Transaction date
+- Transaction type
+- Amount
+- Currency
+
+The generated transactions use account IDs from the existing account reference data.
+
+## Spark SQL
+
+The same transaction analysis was implemented using both the PySpark DataFrame API and Spark SQL.
+
+A temporary view named `transactions` was created from the transactions DataFrame.
+
+The analysis uses:
+
+- `GROUP BY`
+- `COUNT()`
+- `SUM()`
+- `AVG()`
+
+Both approaches produced the same results.
+
+| Transaction Type | Transaction Count |
+|---|---:|
+| CREDIT | 50,115 |
+| DEBIT | 49,885 |
+
+The DataFrame API uses methods such as `groupBy()` and `agg()`, while Spark SQL uses SQL statements to perform the same analysis.
+
+## Spark Execution Concepts
+
+The project demonstrates the following Apache Spark execution concepts.
+
+### Transformation
+
+A transformation creates a new DataFrame. Spark evaluates it lazily.
+
+Example: `filter()`
+
+### Action
+
+An action triggers Spark execution and returns a result.
+
+Example: `count()`
+
+### Lazy Evaluation
+
+Spark does not execute transformations immediately. It waits until an action is called.
+
+### Partitions
+
+Partitions are smaller chunks of data that Spark can process in parallel.
+
+The transactions DataFrame reported 2 partitions in the local execution.
+
+### Shuffle
+
+A shuffle moves data between partitions.
+
+In this project, `groupBy()` may cause a shuffle because data may need to move between partitions.
+
+## Parquet Storage
+
+A transaction summary DataFrame was prepared for Parquet storage.
+
+The project attempted to write the summary to Parquet and read it back.
+
+However, the operation could not be completed because the local Windows environment was missing the required Hadoop filesystem configuration.
+
+The error was captured and documented. As allowed by the assignment, no additional Hadoop or unofficial Windows utilities were installed.
+
+**Windows Environment Limitation:**
+The Parquet write/read operation could not be completed because of a local Windows Hadoop filesystem configuration issue. Spark reported that `winutils.exe` was missing and `HADOOP_HOME` and `hadoop.home.dir` were not configured. The error was captured in `evidence/week6/parquet_results.txt`. This limitation is documented instead of spending additional time installing Windows Hadoop utilities.
+
+
+Script: `src/spark/parquet_demo.py`
+
+## PySpark Testing
+
+Automated tests were created in:
+
+`tests/spark/test_spark_pipeline.py`
+
+The tests validate:
+
+1. Expected transaction row count
+2. CREDIT transaction count
+3. Duplicate transaction IDs
+4. Null transaction amounts
+5. Transaction-to-account join integrity
+
+### Test Execution
+
+Run the Week 6 Spark tests using:
+
+```powershell
+py -3.12 -m pytest tests/spark/test_spark_pipeline.py -v
+
+
+## How to Run Week 6
+
+Run the following commands from the project root directory.
+
+### 1. Generate Synthetic Transactions
+
+```powershell
+py -3.12 -m src.spark.generate_transactions
+```
+
+This generates 100,000 synthetic banking transactions.
+
+### 2. Load Banking Data
+
+```powershell
+py -3.12 -m src.spark.load_data
+```
+
+Loads transactions, accounts, customers, and branches into PySpark DataFrames.
+
+### 3. Run Transformations
+
+```powershell
+py -3.12 -m src.spark.transformations
+```
+
+Demonstrates column selection, filtering, and derived columns.
+
+### 4. Run Analytics and Joins
+
+```powershell
+py -3.12 -m src.spark.analytics
+```
+
+Performs aggregations and joins banking transactions with account and branch information.
+
+### 5. Run Data Quality Checks
+
+```powershell
+py -3.12 -m src.spark.data_quality
+```
+
+Checks null values, duplicate transaction IDs, and invalid account, customer, and branch references.
+
+### 6. Compare DataFrame API and Spark SQL
+
+```powershell
+py -3.12 -m src.spark.spark_sql_analysis
+```
+
+Runs equivalent transaction summaries using both approaches.
+
+### 7. Review Execution Concepts
+
+```powershell
+py -3.12 -m src.spark.execution_concepts
+```
+
+Demonstrates transformations, actions, partitions, and shuffle concepts.
+
+### 8. Test the Pipeline
+
+```powershell
+py -3.12 -m pytest tests/spark/test_spark_pipeline.py -v
+```
+
+Runs the Week 6 PySpark tests.
+
+### 9. Run the Parquet Demonstration
+
+```powershell
+py -3.12 -m src.spark.parquet_demo
+```
+
+Attempts to write and read a Parquet summary. See the Parquet Storage section for the documented Windows environment limitation.
+
+
+## Week 6 — Understanding Questions and Answers
+
+### 1. What is PySpark?
+
+PySpark is the Python API for Apache Spark. It is used to process and analyze large datasets.
+
+### 2. What is a DataFrame?
+
+A DataFrame is a distributed collection of data organized into named columns.
+
+### 3. What is the difference between a transformation and an action?
+
+A transformation creates a new DataFrame, while an action triggers execution and returns a result or writes data.
+
+### 4. What is lazy evaluation?
+
+Lazy evaluation means Spark waits to execute transformations until an action is called.
+
+### 5. What is a partition?
+
+A partition is a smaller portion of a dataset that Spark can process separately.
+
+### 6. What is a shuffle?
+
+A shuffle moves data between partitions, often during operations such as `groupBy()` and some joins.
+
+### 7. What is the difference between the DataFrame API and Spark SQL?
+
+The DataFrame API uses Python methods such as `groupBy()` and `agg()`. Spark SQL uses SQL statements such as `GROUP BY`, `COUNT()`, and `SUM()`.
+
+In this project, both approaches produced the same transaction summary.
+
+### 8. What is data quality checking?
+
+Data quality checking identifies problems such as null values, duplicate transaction IDs, and invalid references between related datasets.
+
+In this project, all seven implemented data quality checks passed for the generated dataset.
+
+### 9. Why use Parquet?
+
+Parquet is a column-oriented file format commonly used for analytical workloads. This project attempted to demonstrate writing and reading a Parquet summary, but the operation was blocked by a documented Windows Hadoop filesystem configuration issue.
+
+### 10. Why generate 100,000 synthetic transactions?
+
+The synthetic dataset provides a repeatable, larger dataset for practicing PySpark transformations, aggregations, joins, and testing without depending on real customer transactions.
+
