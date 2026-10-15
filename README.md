@@ -1004,3 +1004,206 @@ Parquet is a column-oriented file format commonly used for analytical workloads.
 
 The synthetic dataset provides a repeatable, larger dataset for practicing PySpark transformations, aggregations, joins, and testing without depending on real customer transactions.
 
+
+
+---
+
+# Week 7 — Dagster Pipeline Orchestration
+## Project Overview
+
+In Week 7, the existing banking data engineering project was extended with Dagster for workflow orchestration.
+
+Dagster organizes the pipeline into assets and manages their execution dependencies. The pipeline reads transaction data from SQLite, validates data quality, runs PySpark transformations, and publishes a JSON report.
+
+The existing Week 5 and Week 6 project work has been preserved.
+
+## Technology Used
+
+- Python 3.10
+- Dagster 1.13.26
+- Dagster Webserver 1.13.26
+- SQLite
+- PySpark 4.2.0
+- pytest 9.1.1
+- Java 17
+- VS Code
+
+## Dagster Pipeline Architecture
+
+The pipeline contains four assets:
+
+1. `transaction_count`
+2. `validated_transactions`
+3. `pyspark_transformation`
+4. `publish_report`
+
+### Data Flow
+
+```text
+SQLite Database
+(database/banking.db)
+        |
+        v
+transaction_count
+        |
+        v
+validated_transactions
+        |
+        v
+pyspark_transformation
+        |
+        v
+publish_report
+        |
+        v
+output/dagster_report.json
+
+Dagster uses the asset dependencies to determine the execution order.
+The PySpark transformation and report publishing steps depend on successful validation.
+
+Asset Responsibilities:-
+
+1. transaction_count
+Reads the number of transactions from the SQLite database.
+
+2. validated_transactions
+Runs data-quality validation on the transaction table.
+
+The validation checks include:
+*Empty transaction tables
+*Missing transaction IDs
+*Missing account IDs
+*Missing transaction dates
+*Missing transaction types
+*Missing transaction amounts
+*Negative transaction amounts
+
+If validation fails, the pipeline stops before the downstream transformation and report publishing assets execute.
+
+3. pyspark_transformation
+Reads the validated transaction data and performs PySpark operations.
+
+The transformation calculates:
+*Total transaction count
+*CREDIT transaction count
+*High-value transaction count
+
+The high-value transaction threshold is greater than 3000.
+This asset has a retry policy configured for up to two retries, with a two-second delay between retries.
+
+4. publish_report
+Publishes the pipeline results to:
+output/dagster_report.json
+
+The report contains:
+*Pipeline status
+*Total transactions
+*CREDIT transactions
+*High-value transactions
+
+The report is written to the same path on each successful run.
+
+
+Data Quality Failure Handling:-
+The pipeline was tested using an isolated SQLite test database.
+An invalid transaction with an empty transaction ID was inserted into the test database.
+The validation asset raised a ValueError.
+Dagster marked the job as failed, and the downstream PySpark transformation did not execute.
+The report publishing asset was also blocked because its upstream dependency did not complete successfully.
+The primary database was not modified during destructive validation tests.
+
+
+Retry Policy:-
+The PySpark transformation asset uses the following retry configuration:
+               -> RetryPolicy(max_retries=2, delay=2)
+This allows Dagster to retry the asset after a failure, subject to the configured retry policy.
+The retry policy is configured for the PySpark transformation asset. It does not automatically apply to every asset in the pipeline.
+
+
+Daily Schedule:-
+A daily schedule has been defined with the cron expression:
+                -> 0 6 * * *
+This represents a scheduled run at 06:00 according to the applicable scheduler timezone.
+The schedule's default status is STOPPED.
+Therefore, the schedule is defined but is not enabled for automatic daily execution by default.
+
+
+Running the Dagster Pipeline:-
+Run these commands from the project root directory.
+
+1. Activate the virtual environment
+         .\.venv\Scripts\Activate.ps1
+
+2. Run the pipeline directly
+         python -m src.orchestration.dagster_pipeline
+This executes the Dagster job in-process.
+
+3. Start the Dagster webserver
+         dagster dev -f src/orchestration/dagster_pipeline.py
+
+Open the local URL displayed in the terminal to access the Dagster interface.
+Use the interface to inspect assets, job runs, execution status, and logs.
+Stop the webserver with Ctrl+C when finished.
+
+
+## Testing
+
+Run the complete test suite from the project root:
+
+```powershell
+python -m pytest -v
+```
+
+The latest complete test run completed successfully with **29 passed tests**.
+The tests cover the existing Week 5 and Week 6 project functionality and the new Week 7 Dagster pipeline.
+
+### Dagster Test Coverage
+
+The Dagster tests cover:
+
+- Successful Dagster job execution using `execute_in_process`.
+- Validation failure preventing downstream transformation execution.
+- Successful transaction validation.
+- Invalid transaction rejection.
+- Empty database rejection.
+- Report generation and report overwrite behavior.
+- End-to-end Dagster job rerun using `execute_in_process`.
+- Retry behavior after a temporary asset failure.
+
+The rerun test executes the Dagster job twice and verifies that the report reflects the updated transaction count. The retry test verifies that the asset succeeds after a temporary failure.
+
+### Test Evidence
+
+Execution logs and supporting evidence are stored in `evidence/week7/`, including:
+
+- Main database pipeline success.
+- Validation failure and downstream blocking.
+- Recovery after correcting invalid test data.
+- Dagster pipeline test results.
+- Retry test results.
+- Full test suite results.
+- Report snapshot captured before the rerun-safety test.
+
+
+Windows Environment Note:-
+
+The local Windows environment may display warnings related to Hadoop utilities or Spark's Python executable configuration.
+These warnings do not necessarily mean that the transformation failed. Verify the final Dagster run status and transformation results.
+The local Parquet demonstration limitation from Week 6 remains documented separately.
+
+
+Limitations:-
+
+*The pipeline runs locally.
+*The source data is stored in SQLite.
+*The pipeline does not use a cloud orchestration service.
+*The daily schedule is defined but stopped by default.
+*The configured retry policy applies to the PySpark transformation asset.
+*The Week 6 Parquet demonstration remains subject to the documented Windows environment limitation.
+
+
+Conclusion:-
+
+Week 7 extends the banking data engineering project with Dagster orchestration.
+The pipeline connects transaction extraction, data-quality validation, PySpark transformation, and report publishing through asset dependencies.
+The project demonstrates successful execution, validation failure handling, downstream blocking, a configured retry policy, a disabled daily schedule, and automated testing.
